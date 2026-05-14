@@ -743,10 +743,17 @@ function cancelDiscard() {
   pendingDelta = null;
   document.getElementById('discardBanner').classList.remove('visible');
 }
-function confirmDiscard() {
+async function confirmDiscard() {
   document.getElementById('discardBanner').classList.remove('visible');
-  // Reload from scratch so unsaved edits vanish
-  loadScratch();
+  try {
+    const result = await loadFromServer();
+    if (result.exists && result.data) {
+      allData      = result.data.allData      || {};
+      recurringTpl = result.data.recurringTpl || {};
+    }
+  } catch(err) {
+    loadScratch(); // fallback
+  }
   markClean();
   if (pendingDelta !== null) { doChangeMonth(pendingDelta); pendingDelta=null; }
 }

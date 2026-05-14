@@ -8,9 +8,9 @@ import logging
 from datetime import datetime, timezone
 from flask import Flask, jsonify, request, abort, send_from_directory
 
-PORT      = int(os.environ.get("PORT", 5005))
+PORT      = int(os.environ.get("PORT", 6005))
 DATA_FILE = os.environ.get("DATA_FILE", "/app/data/stash-data.json")
-APP_DIR   = os.path.join(os.path.dirname(__file__), "app")
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__, static_folder=None)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -61,7 +61,7 @@ def health():
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def serve_static(path):
-    # Serve files from /app/app/; fall back to index.html for SPA routing
+    # Serve files from /app; fall back to index.html for SPA routing
     target = os.path.join(APP_DIR, path) if path else ""
     if path and os.path.isfile(target):
         return send_from_directory(APP_DIR, path)
