@@ -391,7 +391,8 @@
   }
   .due-input:hover  { border-color: var(--border); }
   .due-input:focus  { border-color: var(--blue); background: var(--input-focus); color: var(--text); }
-  .due-input.overdue { color: var(--red); border-color: rgba(248,81,73,0.4); }
+  .due-input.overdue { color: var(--red); }
+  .due-input.paid    { color: var(--accent); }
   .due-input.due-soon { color: var(--yellow); }
 
   .td-move { width: 28px; text-align: center; padding: 0 2px !important; }
@@ -537,12 +538,12 @@
 
   <!-- SAVE BAR -->
   <div class="save-bar">
-    <div class="save-bar-left">
-      <span class="dirty-dot" id="dirtyDot"></span>
-      <span class="save-status saved" id="saveStatus">All changes saved</span>
-    </div>
     <div style="display:flex;gap:8px;">
       <button class="btn" onclick="document.getElementById('loadDataInput').click()" title="Import a JSON file from old version">📂 Import</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="dirty-dot" id="dirtyDot"></span>
+      <span class="save-status saved" id="saveStatus">All changes saved</span>
       <button class="btn btn-blue" id="saveBtn" onclick="saveDataFile()">💾 Save</button>
     </div>
   </div>
@@ -835,9 +836,11 @@ function fmtDiff(n) {
 }
 
 // Returns CSS class for due date input based on how close/past due it is
-function getDueClass(due, refDate) {
+// If actual has been entered, always show green (paid)
+function getDueClass(due, refDate, actual) {
   const day = parseInt(due);
   if (!day || day < 1 || day > 31) return '';
+  if (actual && parseFloat(actual) > 0) return ' paid';
   const today = refDate || new Date();
   const thisMonth = today.getMonth();
   const thisYear  = today.getFullYear();
@@ -1006,7 +1009,7 @@ function renderContent() {
       <td class="td-diff ${dc}" style="width:10%">${dl}</td>
       ${DUE_DATE_CATS.has(cat) ? `
       <td class="td-due">
-        <input class="due-input${getDueClass(r.due,currentDate)}" type="text" inputmode="numeric"
+        <input class="due-input${getDueClass(r.due,currentDate,r.actual)}" type="text" inputmode="numeric"
           maxlength="2" value="${r.due||''}" placeholder="Day"
           title="Day of month due (e.g. 15)"
           oninput="updateRow('${cat}','${r.id}','due',this.value.replace(/[^0-9]/g,'').slice(0,2))">
